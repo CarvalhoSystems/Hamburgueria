@@ -19,11 +19,12 @@ menuBtn.addEventListener("click", () => {
   navMenu.classList.toggle("active");
 });
 btnPedido.addEventListener("click", () => {
-  menuBtn.classList.remove("active");
-  navMenu.classList.remove("active");
+  // Fecha o menu se estiver aberto ao clicar em "Fazer Pedido"
+  if (navMenu.classList.contains("active")) {
+    menuBtn.classList.remove("active");
+    navMenu.classList.remove("active");
+  }
 });
-
-fecharMenu.addEventListener;
 //=================================//
 // 3. Carrinho de Compras
 // ==================================
@@ -42,9 +43,6 @@ const totalCarrinhoEl = document.querySelector(".carrinho-total");
 const limparCarrinhoBtn = document.querySelector("#limparCarrinhoBtn");
 const finalizarCompraBtn = document.querySelector(".finalizarCompraBtn");
 const quantidadeTotalEl = document.querySelector(".quantidade-total");
-const adcionarAoCarrinhoBtns = document.querySelectorAll(
-  ".adicionarAoCarrinho"
-);
 // O carrinho agora é uma variável global que persiste
 
 let carrinho = [];
@@ -73,28 +71,6 @@ carrinhoOverlay.addEventListener("click", fecharCarrinho);
 // 6. Funções adicionar produtos ao carrinho
 // ==========================================
 
-// Delegação de evento para os botões "Adicionar ao Carrinho"
-addEventListener("click", (event) => {
-  if (event.target.classList.contains("btn-adicionar")) {
-    const produtoEl = event.target.closest(".menu-item");
-    const produtoId = Array.from(produtos).indexOf(produtoEl) + 1; // +1 para começar do ID 1
-    const produtoNome = produtoEl.querySelector("h4").innerText;
-    const produtoPrecoText = produtoEl.querySelector(".preco").innerText;
-    const produtoPreco = parseFloat(
-      produtoPrecoText.replace("R$ ", "").replace(",", "."),
-
-      Swal.fire({
-        icon: "success",
-        title: "Produto Adicionado!",
-        text: `${produtoNome} foi adicionado ao carrinho.`,
-        showConfirmButton: false,
-        timer: 1500,
-      })
-    );
-    adicionarAoCarrinho(produtoId, produtoNome, produtoPreco);
-  }
-});
-
 function adicionarAoCarrinho(produtoId, produtoNome, produtoPreco) {
   // Verificar se o produto já está no carrinho
   const produtoExistente = carrinho.find((item) => item.id === produtoId);
@@ -110,40 +86,6 @@ function adicionarAoCarrinho(produtoId, produtoNome, produtoPreco) {
   }
   atualizarCarrinho();
 }
-
-//=================================//
-// Limpar o carrinho
-limparCarrinhoBtn.addEventListener("click", () => {
-  carrinho = [];
-  atualizarCarrinho();
-});
-
-//=================================//
-// 7. Finalizar a compra
-//=================================//
-finalizarCompraBtn.addEventListener("click", () => {
-  finalizarCompraBtn.addEventListener("click", () => {
-    if (carrinho.length === 0) {
-      Swal.fire({
-        icon: "warning",
-        title: "Seu carrinho está vazio!",
-        text: "Adicione produtos antes de finalizar a compra.",
-      });
-      return;
-    }
-
-    Swal.fire({
-      icon: "success",
-      title: "Compra Efetuada com Sucesso!",
-      text: "Você será redirecionado para a forma de pagamento.",
-      showConfirmButton: false,
-      timer: 3500,
-    }).then(() => {
-      // Aqui você pode montar uma mensagem com os itens do carrinho para o WhatsApp
-      window.location.href = "";
-    });
-  });
-});
 
 //=================================//
 // 7. Atualizar o carrinho
@@ -182,20 +124,6 @@ function atualizarCarrinho() {
     .toFixed(2)
     .replace(".", ",")}</span>`;
 }
-
-// Delegação de evento para os botões "Adicionar ao Carrinho"
-document.addEventListener("click", (event) => {
-  // Listener para os botões de quantidade e remover
-  if (event.target.matches(".btn-qtd")) {
-    const index = parseInt(event.target.dataset.index);
-    const acao = event.target.dataset.action;
-    atualizarItemCarrinho(index, acao);
-  } else if (event.target.matches(".btn-remover")) {
-    const index = parseInt(event.target.dataset.index);
-    // Usamos 'remove' como ação para a função de atualização
-    atualizarItemCarrinho(index, "remove");
-  }
-});
 
 // ==========================================
 // 8. Função para Aumentar/Diminuir/Remover Itens
@@ -255,17 +183,17 @@ function enviarPedidoWhatsApp() {
   }
 
   // Monta a mensagem do pedido
-  let mensagem = "Olá, gostaria de fazer o seguinte pedido:\n\n";
+  let mensagem = "Olá, gostaria de fazer o seguinte pedido:";
   let total = 0;
 
   carrinho.forEach((item) => {
-    mensagem += `*${item.nome}*\n`;
-    mensagem += `Quantidade: ${item.quantidade}\n`;
-    mensagem += `Preço: R$ ${item.preco.toFixed(2)}\n\n`;
+    mensagem += `\n\n*${item.nome}*`;
+    mensagem += `\nQuantidade: ${item.quantidade}`;
+    mensagem += `\nPreço: R$ ${item.preco.toFixed(2)}`;
     total += item.preco * item.quantidade;
   });
 
-  mensagem += `*Total do Pedido: R$ ${total.toFixed(2)}*`;
+  mensagem += `\n\n*Total do Pedido: R$ ${total.toFixed(2)}*`;
 
   // Número de telefone (substitua pelo seu número com código do país e DDD)
   const numeroTelefone = "5511999998888";
@@ -281,6 +209,44 @@ function enviarPedidoWhatsApp() {
 // Adiciona o evento aos dois botões
 fazerPedidoBtn.addEventListener("click", enviarPedidoWhatsApp);
 finalizarCompraBtn.addEventListener("click", enviarPedidoWhatsApp);
+
+// ==========================================
+// 10. Delegação de Eventos Centralizada
+// ==========================================
+document.addEventListener("click", (event) => {
+  const target = event.target;
+
+  // Adicionar produto ao carrinho
+  if (target.classList.contains("btn-adicionar")) {
+    const produtoEl = target.closest(".menu-item");
+    const produtoId = target.dataset.id; // Mais robusto que usar index
+    const produtoNome = produtoEl.querySelector("h4").innerText;
+    const produtoPrecoText = produtoEl.querySelector(".preco").innerText;
+    const produtoPreco = parseFloat(
+      produtoPrecoText.replace("R$ ", "").replace(",", ".")
+    );
+
+    adicionarAoCarrinho(produtoId, produtoNome, produtoPreco);
+
+    Swal.fire({
+      icon: "success",
+      title: "Produto Adicionado!",
+      text: `${produtoNome} foi adicionado ao carrinho.`,
+      showConfirmButton: false,
+      timer: 1500,
+    });
+  }
+
+  // Ações dentro do carrinho (aumentar, diminuir, remover)
+  if (target.matches(".btn-qtd")) {
+    const index = parseInt(target.dataset.index);
+    const acao = target.dataset.action;
+    atualizarItemCarrinho(index, acao);
+  } else if (target.matches(".btn-remover")) {
+    const index = parseInt(target.dataset.index);
+    atualizarItemCarrinho(index, "remove");
+  }
+});
 
 // 10. Botão voltar ao topo
 //=================================//
@@ -327,5 +293,3 @@ acompanhamentosModal.addEventListener("click", (event) => {
     fecharModalAcompanhamentos();
   }
 });
-
-//=================================//
