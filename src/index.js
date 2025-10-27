@@ -266,8 +266,7 @@ function acaoFinalizarCompraCarrinho() {
     confirmButtonText: "Confirmar e Enviar Pedido",
   }).then((result) => {
     if (result.isConfirmed) {
-      // Redireciona APÓS o cliente confirmar
-      window.localStorage.setItem("pedido", pedido.mensagemCodificada);
+      // Redireciona APÓS o cliente confirmar ao whatsapp
       window.open(pedido.urlWhatsApp, "_blank");
       window.location.reload();
 
