@@ -146,7 +146,7 @@ function atualizarItemCarrinho(index, action) {
 }
 
 // ==========================================
-// 8. Inicialização
+// 9. Inicialização
 // ==========================================
 atualizarCarrinho();
 
@@ -167,12 +167,55 @@ function limparCarrinho() {
   carrinho = [];
   atualizarCarrinho();
 }
-//=================================//
-// 9. Fazer o pedido via WhatsApp
-//=================================//
-const fazerPedidoBtn = document.getElementById("fazer-pedido"); // Botão do header
+// =========================================================
+// 10. FUNÇÃO PARA MONTAR A MENSAGEM DO PEDIDO
+//    (Usada pelo botão do Header e pelo SweetAlert)
+// =========================================================
+function montarMensagemPedido() {
+  // Verifica se o carrinho está vazio (você pode querer chamar isso externamente)
+  if (carrinho.length === 0) {
+    return { total: 0 };
+  }
 
-function enviarPedidoWhatsApp() {
+  let mensagem = "🍔 Olá, Burger Master! Gostaria de fazer o seguinte pedido:";
+  let total = 0;
+
+  carrinho.forEach((item) => {
+    // Assume que 'item' tem 'nome', 'quantidade' e 'preco'
+    const precoItem = item.preco * item.quantidade;
+
+    mensagem += `\n\n- ${item.nome}`;
+    mensagem += `\n  Qtd: ${item.quantidade} x R$ ${item.preco.toFixed(2)}`;
+    mensagem += `\n  Subtotal: R$ ${precoItem.toFixed(2)}`;
+
+    total += precoItem;
+  });
+
+  mensagem += `\n\n======================`;
+  mensagem += `\n*TOTAL GERAL: R$ ${total.toFixed(2)}*`;
+  mensagem += `\n======================\n`;
+
+  // Configura o URL do WhatsApp
+  const numeroTelefone = "5511999998888"; // SUBSTITUA PELO SEU NÚMERO
+  const mensagemCodificada = encodeURIComponent(mensagem);
+  const urlWhatsApp = `https://wa.me/${numeroTelefone}?text=${mensagemCodificada}`;
+
+  return {
+    mensagem,
+    total,
+    urlWhatsApp,
+    mensagemCodificada,
+  };
+}
+
+// =========================================================
+// 11. FUNÇÃO DE AÇÃO DO BOTÃO "FAZER PEDIDO" DO HEADER
+//    (Redireciona diretamente para o WhatsApp)
+// =========================================================
+
+function acaoFazerPedidoHeader() {
+  const pedido = montarMensagemPedido();
+
   if (carrinho.length === 0) {
     Swal.fire({
       icon: "warning",
@@ -182,36 +225,67 @@ function enviarPedidoWhatsApp() {
     return;
   }
 
-  // Monta a mensagem do pedido
-  let mensagem = "Olá, gostaria de fazer o seguinte pedido:";
-  let total = 0;
-
-  carrinho.forEach((item) => {
-    mensagem += `\n\n*${item.nome}*`;
-    mensagem += `\nQuantidade: ${item.quantidade}`;
-    mensagem += `\nPreço: R$ ${item.preco.toFixed(2)}`;
-    total += item.preco * item.quantidade;
-  });
-
-  mensagem += `\n\n*Total do Pedido: R$ ${total.toFixed(2)}*`;
-
-  // Número de telefone (substitua pelo seu número com código do país e DDD)
-  const numeroTelefone = "5511999998888";
-
-  // Codifica a mensagem para a URL
-  const mensagemCodificada = encodeURIComponent(mensagem);
-
-  // Monta a URL e redireciona
-  const urlWhatsApp = `https://wa.me/${numeroTelefone}?text=${mensagemCodificada}`;
-  window.open(urlWhatsApp, "_blank");
+  // Redirecionamento direto para o header
+  window.open(pedido.urlWhatsApp, "_blank");
 }
 
-// Adiciona o evento aos dois botões
-fazerPedidoBtn.addEventListener("click", enviarPedidoWhatsApp);
-finalizarCompraBtn.addEventListener("click", enviarPedidoWhatsApp);
+// =========================================================
+// 12. FUNÇÃO DE AÇÃO DO BOTÃO "FINALIZAR COMPRA" DO CARRINHO
+//    (Abre o SweetAlert com opções de pagamento)
+// =========================================================
+
+function acaoFinalizarCompraCarrinho() {
+  const pedido = montarMensagemPedido();
+
+  if (carrinho.length === 0) {
+    Swal.fire({
+      icon: "warning",
+      title: "Seu carrinho está vazio!",
+      text: "Adicione produtos antes de finalizar o pedido.",
+    });
+    return;
+  }
+
+  Swal.fire({
+    title: "Seu pedido será enviado via WhatsApp!",
+    html: `
+            <p>Por favor, informe ao nosso atendente no WhatsApp qual o método de pagamento preferido:</p>
+            <div style="text-align: left; margin: 15px auto; width: fit-content;">
+                <strong>✅ PIX (Chave aleatória)</strong><br>
+                <strong>💳 Cartão de Crédito/Débito (Na entrega)</strong><br>
+                <strong>💰 Dinheiro (Na entrega - Trazer troco)</strong>
+            </div>
+            <p>Ao clicar em "Confirmar e Enviar", você será redirecionado.</p>
+        `,
+    icon: "info",
+    showCancelButton: true,
+    confirmButtonColor: "#ff4500", // Cor Primária
+    cancelButtonColor: "#6c757d",
+    confirmButtonText: "Confirmar e Enviar Pedido",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Redireciona APÓS o cliente confirmar
+      window.open(pedido.urlWhatsApp, "_blank");
+
+      // Opcional: Limpa o carrinho após o envio
+      // Verifique se a função limparCarrinho existe e chame-a aqui.
+      // limparCarrinho();
+    }
+  });
+}
+
+// =========================================================
+// 13. ADICIONA OS EVENT LISTENERS
+// =========================================================
+
+// Adiciona evento ao botão "Fazer Pedido" do header
+btnPedido.addEventListener("click", acaoFazerPedidoHeader);
+
+// Adiciona evento ao botão "Finalizar Pedido" da Sidebar do Carrinho
+finalizarCompraBtn.addEventListener("click", acaoFinalizarCompraCarrinho);
 
 // ==========================================
-// 10. Delegação de Eventos Centralizada
+// 14. Delegação de Eventos Centralizada
 // ==========================================
 document.addEventListener("click", (event) => {
   const target = event.target;
@@ -248,7 +322,7 @@ document.addEventListener("click", (event) => {
   }
 });
 
-// 10. Botão voltar ao topo
+// 15. Botão voltar ao topo
 //=================================//
 const backToTopBtn = document.getElementById("scrollToTopBtn");
 window.addEventListener("scroll", () => {
@@ -267,7 +341,7 @@ backToTopBtn.addEventListener("click", () => {
 });
 
 //=================================//
-// 11. Botão ver acompanhamentos
+// 16. Botão ver acompanhamentos
 //=================================//
 const abrirAcompanhamentosBtn = document.querySelector("#abri-acompanhamentos");
 const fecharAcompanhamentosBtn = document.querySelector(
