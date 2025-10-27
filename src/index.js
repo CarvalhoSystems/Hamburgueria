@@ -255,7 +255,7 @@ function acaoFinalizarCompraCarrinho() {
             <div style="text-align: left; margin: 15px auto; width: fit-content;">
                 <strong>✅ PIX (Chave aleatória)</strong><br>
                 <strong>💳 Cartão de Crédito/Débito (Na entrega)</strong><br>
-                <strong>💰 Dinheiro (Na entrega - Trazer troco)</strong>
+                <strong>💰 Dinheiro (Na entrega - Precisa de troco ?)</strong>
             </div>
             <p>Ao clicar em "Confirmar e Enviar", você será redirecionado.</p>
         `,
@@ -267,11 +267,11 @@ function acaoFinalizarCompraCarrinho() {
   }).then((result) => {
     if (result.isConfirmed) {
       // Redireciona APÓS o cliente confirmar
+      window.localStorage.setItem("pedido", pedido.mensagemCodificada);
       window.open(pedido.urlWhatsApp, "_blank");
+      window.location.reload();
 
-      // Opcional: Limpa o carrinho após o envio
-      // Verifique se a função limparCarrinho existe e chame-a aqui.
-      // limparCarrinho();
+      limparCarrinho();
     }
   });
 }
