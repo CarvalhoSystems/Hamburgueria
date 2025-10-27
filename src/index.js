@@ -22,6 +22,8 @@ btnPedido.addEventListener("click", () => {
   menuBtn.classList.remove("active");
   navMenu.classList.remove("active");
 });
+
+fecharMenu.addEventListener;
 //=================================//
 // 3. Carrinho de Compras
 // ==================================
@@ -240,13 +242,46 @@ function limparCarrinho() {
 //=================================//
 // 9. Fazer o pedido via WhatsApp
 //=================================//
-const fazerPedidoBtn = document.getElementById("fazer-pedido");
-fazerPedidoBtn.addEventListener("click", () => {
-  window.location.href =
-    "https://wa.me/5511969018563?text=Ol%C3%A1%2C%20gostaria%20de%20fazer%20um%20pedido.";
-});
+const fazerPedidoBtn = document.getElementById("fazer-pedido"); // Botão do header
 
-//=================================//
+function enviarPedidoWhatsApp() {
+  if (carrinho.length === 0) {
+    Swal.fire({
+      icon: "warning",
+      title: "Seu carrinho está vazio!",
+      text: "Adicione produtos antes de finalizar o pedido.",
+    });
+    return;
+  }
+
+  // Monta a mensagem do pedido
+  let mensagem = "Olá, gostaria de fazer o seguinte pedido:\n\n";
+  let total = 0;
+
+  carrinho.forEach((item) => {
+    mensagem += `*${item.nome}*\n`;
+    mensagem += `Quantidade: ${item.quantidade}\n`;
+    mensagem += `Preço: R$ ${item.preco.toFixed(2)}\n\n`;
+    total += item.preco * item.quantidade;
+  });
+
+  mensagem += `*Total do Pedido: R$ ${total.toFixed(2)}*`;
+
+  // Número de telefone (substitua pelo seu número com código do país e DDD)
+  const numeroTelefone = "5511999998888";
+
+  // Codifica a mensagem para a URL
+  const mensagemCodificada = encodeURIComponent(mensagem);
+
+  // Monta a URL e redireciona
+  const urlWhatsApp = `https://wa.me/${numeroTelefone}?text=${mensagemCodificada}`;
+  window.open(urlWhatsApp, "_blank");
+}
+
+// Adiciona o evento aos dois botões
+fazerPedidoBtn.addEventListener("click", enviarPedidoWhatsApp);
+finalizarCompraBtn.addEventListener("click", enviarPedidoWhatsApp);
+
 // 10. Botão voltar ao topo
 //=================================//
 const backToTopBtn = document.getElementById("scrollToTopBtn");
