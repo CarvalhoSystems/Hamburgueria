@@ -15,16 +15,18 @@ const btnPedido = document.querySelector(".btn-pedido");
 //===================================//
 
 menuBtn.addEventListener("click", () => {
-  menuBtn.classList.toggle("active");
+  const navMenu = document.querySelector(".nav-links");
   navMenu.classList.toggle("active");
+  menuBtn.classList.toggle("active");
+  // fecha o menu clicando fora
+  document.addEventListener("click", (event) => {
+    if (!navMenu.contains(event.target) && !menuBtn.contains(event.target)) {
+      navMenu.classList.remove("active");
+      menuBtn.classList.remove("active");
+    }
+  });
 });
-btnPedido.addEventListener("click", () => {
-  // Fecha o menu se estiver aberto ao clicar em "Fazer Pedido"
-  if (navMenu.classList.contains("active")) {
-    menuBtn.classList.remove("active");
-    navMenu.classList.remove("active");
-  }
-});
+
 //=================================//
 // 3. Carrinho de Compras
 // ==================================
@@ -367,3 +369,7 @@ acompanhamentosModal.addEventListener("click", (event) => {
     fecharModalAcompanhamentos();
   }
 });
+
+//=========================
+// Botão Menu
+//=========================
